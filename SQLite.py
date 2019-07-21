@@ -29,3 +29,5 @@ class SQLite:
 	def ExecuteNonQuery(self,query):
 		self.cur.execute(query)
 		self.conn.commit()
+	
+
