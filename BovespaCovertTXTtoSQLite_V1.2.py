@@ -26,7 +26,7 @@ def InsertAllDailyStockInfoLite(idStock, allDailyStockInfo):
 		
 #Inset in Database all Daily Stock Info
 def InsertStock(allDailyStockInfo):
-	if len(allDailyStockInfo) < 100:
+	if len(allDailyStockInfo) < 800:
 		return
 	id=GetStockID(allDailyStockInfo[0])
 	#print (id)
@@ -48,6 +48,19 @@ def GetStockID(dailyStockInfo):
 		sQLite.ExecuteNonQuery(sql)
 		return GetStockID(dailyStockInfo)
 
+def AddInDB(Alldata):
+	CurrentCodeOfTrading=""
+	AllDailyStockInfo=[]
+	Alldata.sort(key=Get_CodeOfTrading)
+	for DayInformationin in Alldata:
+		if CurrentCodeOfTrading != DayInformationin.CodeOfTrading:
+			print(CurrentCodeOfTrading)
+			InsertStock(AllDailyStockInfo)
+			AllDailyStockInfo.clear()
+		AllDailyStockInfo.append(DayInformationin);
+
+		CurrentCodeOfTrading=DayInformationin.CodeOfTrading
+	#InsertStock(AllDailyStockInfo)
 
 def LoadFileCallAddInDB(FileName):
 	Alldata = []
@@ -58,19 +71,10 @@ def LoadFileCallAddInDB(FileName):
 		DayInformationTemp=DayInformation(line)
 		if(DayInformationTemp.RegisterType =="01"):
 			Alldata.append(DayInformationTemp)
-				
 	f.close()
 	print("Load completed")
-	Current_PTOEXE=""
-	AllDailyStockInfo=[]
-	Alldata.sort(key=Get_PTOEXE)
-	for DayInformationin in Alldata:
-		if Current_PTOEXE != DayInformationin.PTOEXE:
-			InsertStock(AllDailyStockInfo)
-			AllDailyStockInfo.clear()
-		AllDailyStockInfo.append(DayInformationin);
-		Current_PTOEXE=DayInformationin.PTOEXE
-	#InsertStock(AllDailyStockInfo)
+	#AddInDB(Alldata)
+	return Alldata
 
 #Change here the name of database file!!!
 CONST_NAME_DATABASE = 'ActionsInfo.db'
@@ -78,10 +82,13 @@ CONST_NAME_DATABASE = 'ActionsInfo.db'
 sQLite=SQLite(CONST_NAME_DATABASE)
 sQLite.Open()
 CreateTables()
+Alldata = []
 AllFileTXT=["COTAHIST_A2010.TXT","COTAHIST_A2011.TXT","COTAHIST_A2012.TXT","COTAHIST_A2013.TXT","COTAHIST_A2014.TXT","COTAHIST_A2015.TXT","COTAHIST_A2016.TXT","COTAHIST_A2017.TXT","COTAHIST_A2018.TXT"]
 #AllFileTXT=["COTAHIST_A2010.TXT"]
 for file in AllFileTXT:
-	LoadFileCallAddInDB("Files\\"+file)
+	Alldata += LoadFileCallAddInDB("Files\\"+file)
 	print(file)
+
+AddInDB(Alldata)
 sQLite.Close()
 #input("Press Enter to continue...")
